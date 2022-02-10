@@ -97,8 +97,15 @@ int parse_opt_commits(const struct option *opt, const char *arg, int unset)
 	if (repo_get_oid(the_repository, arg, &oid))
 		return error("malformed object name %s", arg);
 	commit = lookup_commit_reference(the_repository, &oid);
-	if (!commit)
+	if (!commit) {
+		const char no_contains[]= "no-contains";
+		if (0 == strncmp(no_contains, opt->long_name, sizeof(no_contains))) {
+			fprintf(stderr, "Commit '%s' not found\n", arg);
+			return 0;
+		}
 		return error("no such commit %s", arg);
+	}
+
 	commit_list_insert(commit, opt->value);
 	return 0;
 }
