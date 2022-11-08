@@ -79,6 +79,8 @@ void strvec_split(struct strvec *, const char *);
  */
 void strvec_clear(struct strvec *);
 
+void strvec_print(const struct strvec *);
+
 /**
  * Disconnect the `items` member from the `strvec` struct and
  * return it. The caller is responsible for freeing the memory used
