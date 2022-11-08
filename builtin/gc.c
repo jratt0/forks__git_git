@@ -776,6 +776,20 @@ static enum schedule_priority parse_schedule(const char *value)
 	return SCHEDULE_NONE;
 }
 
+static const char *get_frequency(enum schedule_priority schedule)
+{
+	switch (schedule) {
+	case SCHEDULE_HOURLY:
+		return "hourly";
+	case SCHEDULE_DAILY:
+		return "daily";
+	case SCHEDULE_WEEKLY:
+		return "weekly";
+	default:
+		BUG("invalid schedule %d", schedule);
+	}
+}
+
 static int maintenance_opt_schedule(const struct option *opt, const char *arg,
 				    int unset)
 {
@@ -1619,20 +1633,6 @@ static int maintenance_unregister(int argc, const char **argv, const char *prefi
 	git_configset_clear(&cs);
 	free(maintpath);
 	return 0;
-}
-
-static const char *get_frequency(enum schedule_priority schedule)
-{
-	switch (schedule) {
-	case SCHEDULE_HOURLY:
-		return "hourly";
-	case SCHEDULE_DAILY:
-		return "daily";
-	case SCHEDULE_WEEKLY:
-		return "weekly";
-	default:
-		BUG("invalid schedule %d", schedule);
-	}
 }
 
 /*
