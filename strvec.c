@@ -3,6 +3,20 @@
 #include "hex.h"
 #include "strbuf.h"
 
+#include "git-compat-util.h"
+void strvec_print(const struct strvec *array)
+{
+	if (array->v != empty_strvec) {
+		int i;
+		fprintf(stderr, "%s", "strvec: {");
+		for (i = 0; i < array->nr; i++)
+			fprintf(stderr, " '%s'", array->v[i]);
+		fprintf(stderr, " }\n");
+	} else
+		fprintf(stderr, "%s", "strvec: {}\n");
+
+}
+
 const char *empty_strvec[] = { NULL };
 
 void strvec_init(struct strvec *array)

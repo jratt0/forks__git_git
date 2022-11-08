@@ -402,6 +402,9 @@ static void child_err_spew(struct child_process *cmd, struct child_err *cerr)
 
 static int prepare_cmd(struct strvec *out, const struct child_process *cmd)
 {
+	fprintf(stderr, "%s", "\n--------> prepare_cmd A: ");
+	strvec_print(&cmd->args);
+
 	if (!cmd->args.v[0])
 		BUG("command is empty");
 
@@ -418,6 +421,9 @@ static int prepare_cmd(struct strvec *out, const struct child_process *cmd)
 	} else {
 		strvec_pushv(out, cmd->args.v);
 	}
+
+	fprintf(stderr, "%s", "\n--------> prepare_cmd B: ");
+	strvec_print(out);
 
 	/*
 	 * If there are no dir separator characters in the command then perform
@@ -436,6 +442,9 @@ static int prepare_cmd(struct strvec *out, const struct child_process *cmd)
 			return -1;
 		}
 	}
+
+	fprintf(stderr, "%s", "\n--------> prepare_cmd C: ");
+	strvec_print(out);
 
 	return 0;
 }

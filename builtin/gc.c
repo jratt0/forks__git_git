@@ -42,6 +42,8 @@
 #include "setup.h"
 #include "trace2.h"
 
+#include "git-compat-util.h"
+
 #define FAILED_RUN "failed to run %s"
 
 static const char * const builtin_gc_usage[] = {
@@ -2304,6 +2306,33 @@ static int systemd_timer_enable_unit(int enable,
 	strvec_pushl(&child.args, "--user", enable ? "enable" : "disable",
 		     "--now", NULL);
 	strvec_pushf(&child.args, "git-maintenance@%s.timer", frequency);
+
+
+	if (enable) {
+		struct child_process cat = CHILD_PROCESS_INIT;
+		struct child_process find = CHILD_PROCESS_INIT;
+
+		fprintf(stderr, "%s", "\n>>================>> systemd_timer_enable_unit (enable==1)\n\n");
+		fprintf(stderr, "%s", "--------> systemctl (on) : ");
+		strvec_print(&child.args);
+
+		fprintf(stderr, "%s", "\n--------> Running: find -dirs -> ls\n");
+		find.stdout_to_stderr = 1;
+		strvec_pushl(&find.args, "find", "/home/tsi/jratterman/.config/systemd/", "!", "-type", "d", "-exec", "ls", "-l", "--color=always", "--quoting-style=shell-always", "{}", "+", NULL);
+		start_command(&find);
+		finish_command(&find);
+
+		fprintf(stderr, "%s", "\n--------> Running: find files -> cat\n");
+		cat.stdout_to_stderr = 1;
+		strvec_pushl(&cat.args, "find", "/home/tsi/jratterman/.config/systemd/", "-type", "f", "-printf", "\n----> %p\n", "-exec", "cat", "{}", ";", NULL);
+		start_command(&cat);
+		finish_command(&cat);
+		fprintf(stderr, "%s", "\n<<================<< systemd_timer_enable_unit\n\n");
+	} else {
+		fprintf(stderr, "%s", "--------> systemctl (off): ");
+		strvec_print(&child.args);
+	}
+
 
 	if (start_command(&child))
 		return error(_("failed to start systemctl"));

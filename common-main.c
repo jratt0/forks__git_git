@@ -7,6 +7,8 @@
 #include "strbuf.h"
 #include "trace2.h"
 
+#include "git-compat-util.h"
+
 /*
  * Many parts of Git have subprograms communicate via pipe, expect the
  * upstream of a pipe to die with SIGPIPE when the downstream of a
@@ -32,6 +34,8 @@ int main(int argc, const char **argv)
 {
 	int result;
 	struct strbuf tmp = STRBUF_INIT;
+
+	fprintf(stderr, "BAZ:GIT=%s", argv[0]);
 
 	trace2_initialize_clock();
 

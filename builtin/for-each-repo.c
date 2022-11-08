@@ -7,6 +7,8 @@
 #include "run-command.h"
 #include "string-list.h"
 
+#include "git-compat-util.h"
+
 static const char * const for_each_repo_usage[] = {
 	N_("git for-each-repo --config=<config> [--] <arguments>"),
 	NULL
@@ -26,6 +28,8 @@ static int run_command_on_repo(const char *path, int argc, const char ** argv)
 
 	free(abspath);
 
+	fprintf(stderr, "%s", "\n--------> run_command_on_repo: ");
+	strvec_print(&child.args);
 	return run_command(&child);
 }
 
