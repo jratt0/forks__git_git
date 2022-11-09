@@ -2337,7 +2337,7 @@ static int systemd_timer_delete_unit_templates(void)
 	if (unlink(filename) && !is_missing_file_error(errno))
 		ret = error_errno(_("failed to delete '%s'"), filename);
 
-	free(filename);
+	FREE_AND_NULL(filename);
 	return ret;
 }
 
@@ -2388,7 +2388,7 @@ static int systemd_timer_write_unit_templates(const char *exec_path)
 			error_errno(_("failed to flush '%s'"), filename);
 			goto error;
 		}
-		free(filename);
+		FREE_AND_NULL(filename);
 	}
 
 	filename = xdg_config_home_systemd("git-maintenance@.service");
@@ -2427,11 +2427,11 @@ static int systemd_timer_write_unit_templates(const char *exec_path)
 		error_errno(_("failed to flush '%s'"), filename);
 		goto error;
 	}
-	free(filename);
+	FREE_AND_NULL(filename);
 	return 0;
 
 error:
-	free(filename);
+	FREE_AND_NULL(filename);
 	systemd_timer_delete_unit_templates();
 	return -1;
 }
