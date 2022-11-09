@@ -2406,15 +2406,18 @@ static int systemd_timer_write_unit_templates(const char *exec_path)
 	       "[Service]\n"
 	       "Type=oneshot\n"
 	       "ExecStart=\"%s/git\" \"--exec-path=%s\" for-each-repo --config=maintenance.repo maintenance run --schedule=%%i\n"
-	       "LockPersonality=yes\n"
-	       "MemoryDenyWriteExecute=yes\n"
 	       "NoNewPrivileges=yes\n"
 	       "RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6\n"
+	       "SystemCallArchitectures=native\n"
+	       "SystemCallFilter=@system-service\n"
+#if 0
+	       "LockPersonality=yes\n"
+	       "MemoryDenyWriteExecute=yes\n"
 	       "RestrictNamespaces=yes\n"
 	       "RestrictRealtime=yes\n"
 	       "RestrictSUIDSGID=yes\n"
-	       "SystemCallArchitectures=native\n"
-	       "SystemCallFilter=@system-service\n";
+#endif
+	       ;
 	if (fprintf(file, unit, exec_path, exec_path) < 0) {
 		error(_("failed to write to '%s'"), filename);
 		fclose(file);
