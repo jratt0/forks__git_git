@@ -2243,6 +2243,10 @@ out:
 	return result;
 }
 
+static char *systemd_timer_files[] = { "git-maintenance@weekly.timer",
+				       "git-maintenance@daily.timer",
+				       "git-maintenance@hourly.timer" };
+
 static int real_is_systemd_timer_available(void)
 {
 	struct child_process child = CHILD_PROCESS_INIT;
@@ -2319,10 +2323,15 @@ static int systemd_timer_enable_unit(int enable,
 static int systemd_timer_delete_unit_templates(void)
 {
 	int ret = 0;
-	char *filename = xdg_config_home_systemd("git-maintenance@.timer");
-	if (unlink(filename) && !is_missing_file_error(errno))
-		ret = error_errno(_("failed to delete '%s'"), filename);
-	FREE_AND_NULL(filename);
+	char *filename;
+
+	int i = 0;
+	for (; i < 3; i++) {
+		filename = xdg_config_home_systemd(systemd_timer_files[i]);
+		if (unlink(filename) && !is_missing_file_error(errno))
+			ret = error_errno(_("failed to delete '%s'"), filename);
+		FREE_AND_NULL(filename);
+	}
 
 	filename = xdg_config_home_systemd("git-maintenance@.service");
 	if (unlink(filename) && !is_missing_file_error(errno))
@@ -2346,38 +2355,41 @@ static int systemd_timer_write_unit_templates(const char *exec_path)
 	FILE *file;
 	const char *unit;
 
-	filename = xdg_config_home_systemd("git-maintenance@.timer");
-	if (safe_create_leading_directories(filename)) {
-		error(_("failed to create directories for '%s'"), filename);
-		goto error;
-	}
-	file = fopen_or_warn(filename, "w");
-	if (!file)
-		goto error;
+	int i = 0;
+	for (; i < 3; i++) {
+		filename = xdg_config_home_systemd(systemd_timer_files[i]);
+		if (safe_create_leading_directories(filename)) {
+			error(_("failed to create directories for '%s'"), filename);
+			goto error;
+		}
+		file = fopen_or_warn(filename, "w");
+		if (!file)
+			goto error;
 
-	unit = "# This file was created and is maintained by Git.\n"
-	       "# Any edits made in this file might be replaced in the future\n"
-	       "# by a Git command.\n"
-	       "\n"
-	       "[Unit]\n"
-	       "Description=Optimize Git repositories data\n"
-	       "\n"
-	       "[Timer]\n"
-	       "OnCalendar=%i\n"
-	       "Persistent=true\n"
-	       "\n"
-	       "[Install]\n"
-	       "WantedBy=timers.target\n";
-	if (fputs(unit, file) == EOF) {
-		error(_("failed to write to '%s'"), filename);
-		fclose(file);
-		goto error;
+		unit = "# This file was created and is maintained by Git.\n"
+		       "# Any edits made in this file might be replaced in the future\n"
+		       "# by a Git command.\n"
+		       "\n"
+		       "[Unit]\n"
+		       "Description=Optimize Git repositories data\n"
+		       "\n"
+		       "[Timer]\n"
+		       "OnCalendar=%s\n"
+		       "Persistent=true\n"
+		       "\n"
+		       "[Install]\n"
+		       "WantedBy=timers.target\n";
+		if (fprintf(file, unit, get_frequency(SCHEDULE_WEEKLY+i)) == EOF) {
+			error(_("failed to write to '%s'"), filename);
+			fclose(file);
+			goto error;
+		}
+		if (fclose(file) == EOF) {
+			error_errno(_("failed to flush '%s'"), filename);
+			goto error;
+		}
+		free(filename);
 	}
-	if (fclose(file) == EOF) {
-		error_errno(_("failed to flush '%s'"), filename);
-		goto error;
-	}
-	free(filename);
 
 	filename = xdg_config_home_systemd("git-maintenance@.service");
 	file = fopen_or_warn(filename, "w");
