@@ -44,6 +44,8 @@
 
 #define FAILED_RUN "failed to run %s"
 
+static const int systemd_timer_compat = 1;
+
 static const char * const builtin_gc_usage[] = {
 	N_("git gc [<options>]"),
 	NULL
@@ -765,7 +767,7 @@ enum schedule_priority {
 
 static enum schedule_priority parse_schedule(const char *value)
 {
-	if (!value)
+	if (!value || strlen(value) == 0)
 		return SCHEDULE_NONE;
 	if (!strcasecmp(value, "hourly"))
 		return SCHEDULE_HOURLY;
@@ -1624,6 +1626,8 @@ static int maintenance_unregister(int argc, const char **argv, const char *prefi
 static const char *get_frequency(enum schedule_priority schedule)
 {
 	switch (schedule) {
+	case SCHEDULE_NONE:
+		return "";
 	case SCHEDULE_HOURLY:
 		return "hourly";
 	case SCHEDULE_DAILY:
@@ -2243,10 +2247,6 @@ out:
 	return result;
 }
 
-static char *systemd_timer_files[] = { "git-maintenance@weekly.timer",
-				       "git-maintenance@daily.timer",
-				       "git-maintenance@hourly.timer" };
-
 static int real_is_systemd_timer_available(void)
 {
 	struct child_process child = CHILD_PROCESS_INIT;
@@ -2319,6 +2319,12 @@ static int systemd_timer_enable_unit(int enable,
 			return error(_("failed to run systemctl"));
 	return 0;
 }
+
+static char *systemd_timer_files[] = {
+	"git-maintenance@weekly.timer",
+	"git-maintenance@daily.timer",
+	"git-maintenance@hourly.timer",
+};
 
 static int systemd_timer_delete_unit_templates(void)
 {
