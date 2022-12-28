@@ -2325,7 +2325,8 @@ static int systemd_timer_enable_unit(int enable,
 static int systemd_timer_delete_timer(enum schedule_priority schedule)
 {
 	int ret = 0;
-	char *timer = xstrfmt("git-maintenance@%s.timer", get_frequency(schedule));
+	char *timer =
+		xstrfmt("git-maintenance@%s.timer", get_frequency(schedule));
 	char *filename = xdg_config_home_systemd(timer);
 	FREE_AND_NULL(timer);
 	if (unlink(filename) && !is_missing_file_error(errno))
@@ -2348,13 +2349,11 @@ static int systemd_timer_delete_units(void)
 {
 	int ret = systemd_timer_delete_service();
 	if (systemd_timer_compat)
-		return ret ||
-		systemd_timer_delete_timer(SCHEDULE_NONE);
+		return ret || systemd_timer_delete_timer(SCHEDULE_NONE);
 	else
-		return ret ||
-			systemd_timer_delete_timer(SCHEDULE_DAILY) ||
-			systemd_timer_delete_timer(SCHEDULE_WEEKLY) ||
-			systemd_timer_delete_timer(SCHEDULE_HOURLY);
+		return ret || systemd_timer_delete_timer(SCHEDULE_DAILY) ||
+		       systemd_timer_delete_timer(SCHEDULE_WEEKLY) ||
+		       systemd_timer_delete_timer(SCHEDULE_HOURLY);
 }
 
 static int systemd_timer_teardown(void)
@@ -2366,9 +2365,10 @@ static int systemd_timer_teardown(void)
 }
 
 static int systemd_timer_write_timer(const char *exec_path,
-					  enum schedule_priority schedule)
+				     enum schedule_priority schedule)
 {
-	char *timer = xstrfmt("git-maintenance@%s.timer", get_frequency(schedule));
+	char *timer =
+		xstrfmt("git-maintenance@%s.timer", get_frequency(schedule));
 	char *filename = xdg_config_home_systemd(timer);
 	FREE_AND_NULL(timer);
 	if (safe_create_leading_directories(filename)) {
@@ -2411,7 +2411,6 @@ static int systemd_timer_write_timer(const char *exec_path,
 error:
 	FREE_AND_NULL(filename);
 	return -1;
-
 }
 
 static int systemd_timer_write_service(const char *exec_path)
@@ -2463,12 +2462,12 @@ static int systemd_timer_write_units(const char *exec_path)
 	int ret = systemd_timer_write_service(exec_path);
 	if (systemd_timer_compat)
 		return ret ||
-			systemd_timer_write_timer(exec_path, SCHEDULE_NONE);
+		       systemd_timer_write_timer(exec_path, SCHEDULE_NONE);
 	else
 		return ret ||
-			systemd_timer_write_timer(exec_path, SCHEDULE_DAILY) ||
-			systemd_timer_write_timer(exec_path, SCHEDULE_WEEKLY) ||
-			systemd_timer_write_timer(exec_path, SCHEDULE_HOURLY);
+		       systemd_timer_write_timer(exec_path, SCHEDULE_DAILY) ||
+		       systemd_timer_write_timer(exec_path, SCHEDULE_WEEKLY) ||
+		       systemd_timer_write_timer(exec_path, SCHEDULE_HOURLY);
 }
 
 static int systemd_timer_setup(void)
@@ -2476,9 +2475,9 @@ static int systemd_timer_setup(void)
 	const char *exec_path = git_exec_path();
 
 	int ret = systemd_timer_write_units(exec_path) ||
-		systemd_timer_enable_unit(1, SCHEDULE_HOURLY) ||
-		systemd_timer_enable_unit(1, SCHEDULE_DAILY) ||
-		systemd_timer_enable_unit(1, SCHEDULE_WEEKLY);
+		  systemd_timer_enable_unit(1, SCHEDULE_HOURLY) ||
+		  systemd_timer_enable_unit(1, SCHEDULE_DAILY) ||
+		  systemd_timer_enable_unit(1, SCHEDULE_WEEKLY);
 	if (ret)
 		systemd_timer_teardown();
 	return ret;
