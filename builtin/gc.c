@@ -2129,6 +2129,8 @@ static int check_crontab_process(const char *cmd)
 
 static int is_crontab_available(void)
 {
+	return 0;
+#if 0
 	const char *cmd = "crontab";
 	int is_available;
 
@@ -2143,6 +2145,7 @@ static int is_crontab_available(void)
 	return 0;
 #else
 	return check_crontab_process(cmd);
+#endif
 #endif
 }
 
