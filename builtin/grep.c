@@ -768,12 +768,13 @@ static int grep_objects(struct grep_opt *opt, const struct pathspec *pathspec,
 }
 
 static int grep_directory(struct grep_opt *opt, const struct pathspec *pathspec,
-			  int exc_std, int use_index)
+			  int exc_std, int no_index)
 {
 	struct dir_struct dir = DIR_INIT;
 	int i, hit = 0;
+	fprintf(stderr, ">>>>> JRATT >>>>> (%s:%d) no_index=%d\n", __FILE__, __LINE__, no_index);
 
-	if (!use_index)
+	if (no_index)
 		dir.flags |= DIR_NO_GITLINKS;
 	if (exc_std)
 		setup_standard_excludes(&dir);
@@ -894,14 +895,14 @@ int cmd_grep(int argc, const char **argv, const char *prefix)
 	struct string_list path_list = STRING_LIST_INIT_DUP;
 	int i;
 	int dummy;
-	int use_index = 1;
+	int no_index = 0;
 	int allow_revs;
 
 	struct option options[] = {
 		OPT_BOOL(0, "cached", &cached,
-			N_("search in index instead of in the work tree")),
-		OPT_NEGBIT(0, "no-index", &use_index,
-			 N_("find in contents not managed by git"), 1),
+			N_("search in index instead of in the work tree (JRATT)")),
+		OPT_BOOL(0, "no-index", &no_index,
+			 N_("find in contents not managed by git")),
 		OPT_BOOL(0, "untracked", &untracked,
 			N_("search in both tracked and untracked files")),
 		OPT_SET_INT(0, "exclude-standard", &opt_exclude,
@@ -1039,17 +1040,17 @@ int cmd_grep(int argc, const char **argv, const char *prefix)
 		the_repository->settings.command_requires_full_index = 0;
 	}
 
-	if (use_index && !startup_info->have_repository) {
+	if (!no_index && !startup_info->have_repository) {
 		int fallback = 0;
 		git_config_get_bool("grep.fallbacktonoindex", &fallback);
 		if (fallback)
-			use_index = 0;
+			no_index = 1;
 		else
 			/* die the same way as if we did it at the beginning */
 			setup_git_directory();
 	}
 	/* Ignore --recurse-submodules if --no-index is given or implied */
-	if (!use_index)
+	if (no_index)
 		recurse_submodules = 0;
 
 	/*
@@ -1104,7 +1105,7 @@ int cmd_grep(int argc, const char **argv, const char *prefix)
 	 * to it must resolve as a rev. If not, then we stop at the first
 	 * non-rev and assume everything else is a path.
 	 */
-	allow_revs = use_index && !untracked;
+	allow_revs = !no_index && !untracked;
 	for (i = 0; i < argc; i++) {
 		const char *arg = argv[i];
 		struct object_id oid;
@@ -1232,13 +1233,16 @@ int cmd_grep(int argc, const char **argv, const char *prefix)
 	if (!show_in_pager && !opt.status_only)
 		setup_pager();
 
-	die_for_incompatible_opt3(!use_index, "--no-index",
+	die_for_incompatible_opt3(no_index, "--no-index",
 				  untracked, "--untracked",
 				  cached, "--cached");
 
-	if (!use_index || untracked) {
-		int use_exclude = (opt_exclude < 0) ? use_index : !!opt_exclude;
-		hit = grep_directory(&opt, &pathspec, use_exclude, use_index);
+	fprintf(stderr, ">>>>> JRATT >>>>> (%s:%d) no_index=%d untracked=%d\n", __FILE__, __LINE__, no_index, untracked);
+	fprintf(stderr, ">>>>> JRATT >>>>> (%s:%d) opt_exclude=%d\n", __FILE__, __LINE__, opt_exclude);
+	if (no_index || untracked) {
+		int use_exclude = (opt_exclude < 0) ? !no_index : !!opt_exclude;
+		fprintf(stderr, ">>>>> JRATT >>>>> (%s:%d) use_exclude=%d !no_index=%d\n", __FILE__, __LINE__, use_exclude, !no_index);
+		hit = grep_directory(&opt, &pathspec, use_exclude, no_index);
 	} else if (0 <= opt_exclude) {
 		die(_("--[no-]exclude-standard cannot be used for tracked contents"));
 	} else if (!list.nr) {

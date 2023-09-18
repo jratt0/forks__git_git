@@ -223,8 +223,8 @@ int fill_directory(struct dir_struct *dir,
 		   struct index_state *istate,
 		   const struct pathspec *pathspec)
 {
-	const char *prefix;
-	size_t prefix_len;
+	const char *prefix = "";
+	size_t prefix_len = 0;
 
 	unsigned exclusive_flags = DIR_SHOW_IGNORED | DIR_SHOW_IGNORED_TOO;
 	if ((dir->flags & exclusive_flags) == exclusive_flags)
@@ -234,8 +234,8 @@ int fill_directory(struct dir_struct *dir,
 	 * Calculate common prefix for the pathspec, and
 	 * use that to optimize the directory walk
 	 */
-	prefix_len = common_prefix_len(pathspec);
-	prefix = prefix_len ? pathspec->items[0].match : "";
+	// prefix_len = common_prefix_len(pathspec);
+	// prefix = prefix_len ? pathspec->items[0].match : "";
 
 	/* Read the directory and prune it */
 	read_directory(dir, istate, prefix, prefix_len, pathspec);
