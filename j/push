@@ -1,0 +1,10 @@
+#!/bin/bash
+set -o errexit # Exit immediately if a pipeline exits with a non-zero status.
+set -o nounset # Treat unset variables and parameters as an error
+set -o xtrace  # Display the command and its expanded arguments
+
+# eval $(ssh-agent bash)
+# ssh-add /home/jratterman/.ssh/id_ed25519
+git push -f jratt \
+    $(git for-each-ref --format='%(refname:short)' refs/heads/) \
+    $(git for-each-ref --format='%(refname:short)' refs/tags/jratt/)

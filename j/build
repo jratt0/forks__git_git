@@ -1,0 +1,42 @@
+#!/bin/bash
+
+echo 'Useage:  all install {,install-}{html,man} test' 1>&2
+echo '         all install html man install-html install-man test' 1>&2
+[[ -z "$1" ]] && exit 1
+
+set -o errexit # Exit immediately if a pipeline exits with a non-zero status.
+set -o nounset # Treat unset variables and parameters as an error
+# set -o xtrace  # Display the command and its expanded arguments
+
+
+time nice make --keep-going --jobs=36 \
+    DC_SHA1=YesPlease \
+    DC_SHA1_SUBMODULE=YesPlease \
+    DEFAULT_EDITOR=emacs \
+    DEVELOPER=YesPlease \
+    NO_GITWEB=NoThanks \
+    PAGER_ENV='LESS=-iMRS LV=-cAu8' \
+    USE_LIBPCRE2=YesPlease \
+    prefix=/home/jratterman/.local \
+    CC=clang-15 CXX=clang++-15 AR=llvm-ar-15 CFLAGS="-flto -O3 -g -Wall -Wno-missing-braces" LDFLAGS="-fuse-ld=lld-15" \
+    "$@" # all install {,install-}{html,man} test
+ln -svf contrib/completion/git-{completion.ba,prompt.}sh ~/.local/bin/
+echo '==========>> DONE <<==========='
+LC_ALL=C sort GIT-BUILD-OPTIONS
+./git version --build-options
+exit 0
+
+    CC=clang-15 CXX=clang++-15 AR=llvm-ar-15 CFLAGS="      -O1 -g -Wall -Wno-missing-braces" LDFLAGS="-fuse-ld=lld-15" \
+    CC=clang-15 CXX=clang++-15 AR=llvm-ar-15 CFLAGS="-flto -O3 -g -Wall -Wno-missing-braces" LDFLAGS="-fuse-ld=lld-15" \
+    DEVOPTS=extra-all \
+    STRIP=true \
+    V=1 \
+
+
+# "Bug": Skipping non-existent commits shouldn't be an error (maybe a warning?)
+# $ cd ~/dev/clean
+# $ git for-each-ref --no-contains=055318fefba1e97d90392609bbe01f6fc9cbc2e3 refs/heads/p4
+# error: no such commit 055318fefba1e97d90392609bbe01f6fc9cbc2e3
+
+## Feature : Allow picking/skipping a `git maintenance`/`scalar` scheduler
+## Bug     : `git grep --no-index /path/to/file` crashes because of abs path

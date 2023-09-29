@@ -1,0 +1,48 @@
+#!/bin/bash -xu
+
+# top="origin/maint"
+top="v2.42.0"
+i=
+
+(set  -xue
+
+git rebase $i $top     maint
+git rebase $i maint    base
+
+git rebase $i base     AbsGrep
+git rebase $i base     NoContains
+git rebase $i base     NoCron
+git rebase $i NoCron   ScalarConfig
+
+git rebase $i base     CentOS79
+git rebase $i CentOS79 SD3
+git rebase $i CentOS79 SystemD
+git rebase $i SystemD  SystemD_debug
+git rebase $i SystemD  SD2
+
+
+set +x
+git switch ScalarConfig
+echo '==========>> DONE <<===========')
+git status -s
+
+exit 0
+
+# git for-each-ref --format='%(refname:short)' refs/heads/
+# git for-each-ref --format='%(refname:short)' refs/tags/jratt/
+# git for-each-ref --format='%(refname:short)' refs/remotes/jratt/
+
+# git -P tag --list 'v2.*' | head
+# git -P log -7 $(git -P tag --list 'v2.*' | head -n1)
+# git -P log -7 origin/maint
+
+
+# git branch -v
+# for b in NoContains SystemD{,_debug}; do git branch -f $b.save $b; done
+# for b in NoContains SystemD{,_debug}; do git diff $b.save $b; done
+
+# SystemD_first      b681b191f9 maintenance: add support for systemd timers on Linux
+
+# NoContains.save    f2ec491937 no-contains
+# SystemD.save       a32009c7a4 FREE_AND_NULL (Optional)
+# SystemD_debug.save bd9e8d63d6 DEBUG
