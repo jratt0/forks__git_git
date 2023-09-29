@@ -162,11 +162,11 @@ static int set_recommended_config(int reconfigure)
 		{ "http.sslBackend", "schannel", 1 },
 #endif
 		/* Optional */
-		{ "status.aheadBehind", "false" },
+		// { "status.aheadBehind", "false" },
 		{ "commitGraph.generationVersion", "1" },
 		{ "core.autoCRLF", "false" },
 		{ "core.safeCRLF", "false" },
-		{ "fetch.showForcedUpdates", "false" },
+		// { "fetch.showForcedUpdates", "false" },
 		{ NULL, NULL },
 	};
 	int i;
